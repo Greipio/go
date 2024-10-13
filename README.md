@@ -16,10 +16,22 @@ The Greip Go library allows you to easily interact with the Greip API to access 
 
 ## Installation
 
-You can install the Greip library by running:
+Add the library to your `go.mod`:
+
+```
+module main
+
+go 1.22.1
+
+require (
+    github.com/greipio/go v0.1.5
+)
+```
+
+Then, download the Greip library by running:
 
 ```bash
-go get github.com/Greipio/go
+go mod download github.com/greipio/go
 ```
 
 ## Usage
@@ -31,7 +43,7 @@ package main
 
 import (
     "fmt"
-    "github.com/Greipio/go"
+    "github.com/greipio/go"
 )
 
 func main() {
@@ -39,7 +51,7 @@ func main() {
     greipInstance := greip.NewGreip("YOUR_API_TOKEN")
 
     // Example: Lookup IP information
-    response, err := greipInstance.Lookup("1.1.1.1")
+    response, err := greipInstance.Lookup("1.1.1.1", []string{"device", "security"})
     if err != nil {
         fmt.Println("Error:", err)
         return
@@ -91,7 +103,7 @@ greipInstance := greip.NewGreip("YOUR_API_TOKEN", true)
 The library returns error for invalid parameters and request-related issues. Here’s an example of handling errors:
 
 ```go
-response, err := greipInstance.Lookup("INVALID_IP")
+response, err := greipInstance.Lookup("INVALID_IP", nil)
 if err != nil {
     fmt.Println("Error:", err)
     return
