@@ -1,3 +1,3 @@
-module github.com/Greipio/go/v2
+module github.com/greipio/go
 
 go 1.22.1
