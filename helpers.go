@@ -1,16 +1,16 @@
 package greip
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
-    "net/http"
-    "encoding/json"
-	"strings"
 	"io"
-	"bytes"
+	"net/http"
+	"strings"
 )
 
-//? Helper function to perform an HTTP GET request
+// ? Helper function to perform an HTTP GET request
 func (g *Greip) getRequest(endpoint string, responseType interface{}, payload ...map[string]interface{}) error {
 	baseURL := g.BaseURL
 	urlEndpoint := fmt.Sprintf("%s%s", baseURL, endpoint)
@@ -30,7 +30,6 @@ func (g *Greip) getRequest(endpoint string, responseType interface{}, payload ..
 		}
 		payload[0]["mode"] = "test"
 	}
-
 
 	// Construct query parameters from the payload
 	query := req.URL.Query()
@@ -80,7 +79,7 @@ func (g *Greip) getRequest(endpoint string, responseType interface{}, payload ..
 	return nil
 }
 
-//? Helper function to perform an HTTP POST request
+// ? Helper function to perform an HTTP POST request
 func (g *Greip) postRequest(endpoint string, responseType interface{}, payload map[string]interface{}) error {
 	baseURL := g.BaseURL
 	urlEndpoint := fmt.Sprintf("%s%s", baseURL, endpoint)
@@ -148,7 +147,7 @@ func (g *Greip) postRequest(endpoint string, responseType interface{}, payload m
 	return nil
 }
 
-//? Helper function to validate params against the available list of parameters
+// ? Helper function to validate params against the available list of parameters
 func validateParams(params []string, availableParams []string) error {
 	for _, param := range params {
 		if !contains(availableParams, param) {
@@ -158,7 +157,7 @@ func validateParams(params []string, availableParams []string) error {
 	return nil
 }
 
-//? Helper function to validate the language (assuming only "EN" and "AR" are allowed)
+// ? Helper function to validate the language (assuming only "EN" and "AR" are allowed)
 func validateLang(lang string) error {
 	allowedLangs := []string{"EN", "AR", "DE", "FR", "ES", "JA", "ZH", "RU"}
 	if !contains(allowedLangs, strings.ToUpper(lang)) {
@@ -167,7 +166,7 @@ func validateLang(lang string) error {
 	return nil
 }
 
-//? Helper function to check if a slice contains a specific value
+// ? Helper function to check if a slice contains a specific value
 func contains(slice []string, item string) bool {
 	for _, v := range slice {
 		if v == item {
