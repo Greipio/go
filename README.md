@@ -2,8 +2,8 @@
 
 The Greip Go library allows you to easily interact with the Greip API to access a variety of services, including IP geolocation, threat intelligence, email validation, and more.
 
-> **Greip API v2 (current):** use module **`github.com/greipio/go/v2`** — docs on [pkg.go.dev/github.com/greipio/go/v2](https://pkg.go.dev/github.com/greipio/go/v2).  
-> The path **`github.com/greipio/go`** (without `/v2`) is the legacy **v1** module; its latest tag is **v1.0.0** and targets the old API. Go requires a new major module path for v2+.
+> **Greip API v2 (`v2.0.0+`):** module **`github.com/greipio/go/v2`** — [pkg.go.dev](https://pkg.go.dev/github.com/greipio/go/v2), [CHANGELOG](./CHANGELOG.md).  
+> **`github.com/greipio/go`** (no `/v2`) is the legacy **v1.0.0** module for the old API. Go requires the `/v2` import path for this major line.
 
 [Report Issue](https://github.com/Greipio/go/issues/new) ·
 [Request Feature](https://github.com/Greipio/go/discussions/new?category=ideas)
