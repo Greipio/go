@@ -24,14 +24,14 @@ module main
 go 1.22.1
 
 require (
-    github.com/greipio/go v1.0.0
+    github.com/greipio/go/v2 v2.0.0
 )
 ```
 
 Then, download the Greip library by running:
 
 ```bash
-go mod download github.com/greipio/go
+go mod download github.com/greipio/go/v2
 ```
 
 ## Usage
@@ -43,7 +43,7 @@ package main
 
 import (
     "fmt"
-    "github.com/greipio/go"
+    "github.com/greipio/go/v2"
 )
 
 func main() {

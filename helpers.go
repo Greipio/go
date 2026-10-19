@@ -10,12 +10,11 @@ import (
 	"strings"
 )
 
-// ? Helper function to perform an HTTP GET request
-func (g *Greip) getRequest(endpoint string, responseType interface{}, payload ...map[string]interface{}) error {
-	baseURL := g.BaseURL
-	urlEndpoint := fmt.Sprintf("%s%s", baseURL, endpoint)
+// ? Helper function to perform an HTTP GET request (v2 path + query string)
+func (g *Greip) getRequest(path string, responseType interface{}, queryParams map[string]interface{}) error {
+	baseURL := strings.TrimSuffix(g.BaseURL, "/")
+	urlEndpoint := fmt.Sprintf("%s/%s", baseURL, strings.TrimPrefix(path, "/"))
 
-	// Prepare headers
 	req, err := http.NewRequest("GET", urlEndpoint, nil)
 	if err != nil {
 		return err
@@ -23,18 +22,26 @@ func (g *Greip) getRequest(endpoint string, responseType interface{}, payload ..
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", g.token))
 	req.Header.Set("Content-Type", "application/json")
 
-	// If test mode is enabled, add the 'mode' to the payload
-	if g.test && len(payload) > 0 {
-		if payload[0] == nil {
-			payload[0] = make(map[string]interface{})
-		}
-		payload[0]["mode"] = "test"
+	if queryParams == nil {
+		queryParams = make(map[string]interface{})
+	}
+	if g.test {
+		queryParams["mode"] = "test"
+	}
+	if _, ok := queryParams["source"]; !ok {
+		queryParams["source"] = "Go-Package"
 	}
 
-	// Construct query parameters from the payload
 	query := req.URL.Query()
-	for key, value := range payload[0] {
-		query.Add(key, fmt.Sprintf("%v", value))
+	for key, value := range queryParams {
+		if value == nil {
+			continue
+		}
+		str := fmt.Sprintf("%v", value)
+		if str == "" {
+			continue
+		}
+		query.Add(key, str)
 	}
 	req.URL.RawQuery = query.Encode()
 
@@ -57,9 +64,8 @@ func (g *Greip) getRequest(endpoint string, responseType interface{}, payload ..
 		return err
 	}
 
-	// Handle API-specific error in the response
-	if status, ok := jsonResponse["status"].(string); ok && strings.ToLower(status) == "error" {
-		description := jsonResponse["description"].(string)
+	if success, ok := jsonResponse["success"].(bool); ok && !success {
+		description, _ := jsonResponse["description"].(string)
 		return fmt.Errorf("API error: %s", description)
 	}
 
@@ -79,10 +85,10 @@ func (g *Greip) getRequest(endpoint string, responseType interface{}, payload ..
 	return nil
 }
 
-// ? Helper function to perform an HTTP POST request
-func (g *Greip) postRequest(endpoint string, responseType interface{}, payload map[string]interface{}) error {
-	baseURL := g.BaseURL
-	urlEndpoint := fmt.Sprintf("%s%s", baseURL, endpoint)
+// ? Helper function to perform an HTTP POST request (v2 path + JSON body)
+func (g *Greip) postRequest(path string, responseType interface{}, payload map[string]interface{}) error {
+	baseURL := strings.TrimSuffix(g.BaseURL, "/")
+	urlEndpoint := fmt.Sprintf("%s/%s", baseURL, strings.TrimPrefix(path, "/"))
 
 	// Prepare headers
 	req, err := http.NewRequest("POST", urlEndpoint, nil)
@@ -92,9 +98,11 @@ func (g *Greip) postRequest(endpoint string, responseType interface{}, payload m
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", g.token))
 	req.Header.Set("Content-Type", "application/json")
 
-	// If test mode is enabled, add the 'mode' to the payload
 	if g.test {
 		payload["mode"] = "test"
+	}
+	if _, ok := payload["source"]; !ok {
+		payload["source"] = "Go-Package"
 	}
 
 	// Encode the payload
@@ -125,9 +133,8 @@ func (g *Greip) postRequest(endpoint string, responseType interface{}, payload m
 		return err
 	}
 
-	// Handle API-specific error in the response
-	if status, ok := jsonResponse["status"].(string); ok && strings.ToLower(status) == "error" {
-		description := jsonResponse["description"].(string)
+	if success, ok := jsonResponse["success"].(bool); ok && !success {
+		description, _ := jsonResponse["description"].(string)
 		return fmt.Errorf("API error: %s", description)
 	}
 

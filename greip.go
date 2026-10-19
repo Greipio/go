@@ -8,7 +8,7 @@ import (
 
 var availableGeoIPParams = []string{"location", "security", "timezone", "currency", "device"}
 var availableCountryParams = []string{"language", "flag", "currency", "timezone"}
-var baseUrl = "https://greipapi.com/"
+var baseUrl = "https://v2.greipapi.com/"
 
 // NewGreip initializes a new Greip instance
 func NewGreip(apiToken string, test ...bool) *Greip {
@@ -82,12 +82,6 @@ func (g *Greip) Lookup(ip string, params []string, lang ...string) (*ResponseLoo
 		langValue = lang[0]
 	}
 
-	payload := map[string]interface{}{
-		"ip":     ip,
-		"params": strings.Join(params, ","),
-		"lang":   strings.ToUpper(langValue),
-	}
-
 	//? Validate the input IP
 	if ip == "" {
 		return nil, errors.New("you must provide the `ip` parameter")
@@ -108,15 +102,13 @@ func (g *Greip) Lookup(ip string, params []string, lang ...string) (*ResponseLoo
 		return nil, err
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("ip", ip)
-	query.Set("params", strings.Join(params, ","))
-	query.Set("lang", strings.ToUpper(langValue))
+	queryParams := map[string]interface{}{
+		"params": strings.Join(params, ","),
+		"lang":   strings.ToUpper(langValue),
+	}
 
-	//? Make the HTTP request
 	var response ResponseLookup
-	err := g.getRequest("IPLookup", &response, payload)
+	err := g.getRequest("lookup/ip/"+url.PathEscape(ip), &response, queryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -157,22 +149,13 @@ func (g *Greip) Lookup(ip string, params []string, lang ...string) (*ResponseLoo
 //   - Network-related errors (e.g., timeouts, unreachable server).
 //   - API-related errors (e.g., invalid API token, malformed IP address).
 func (g *Greip) Threats(ip string) (*ResponseThreats, error) {
-	payload := map[string]interface{}{
-		"ip": ip,
-	}
-
 	//? Validate the input IP
 	if ip == "" {
 		return nil, errors.New("you must provide the `ip` parameter")
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("ip", ip)
-
-	//? Make the HTTP request
 	var response ResponseThreats
-	err := g.getRequest("threats", &response, payload)
+	err := g.getRequest("score/ip/"+url.PathEscape(ip), &response, map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -236,12 +219,6 @@ func (g *Greip) BulkLookup(ips []string, params []string, lang ...string) (*map[
 		langValue = lang[0]
 	}
 
-	payload := map[string]interface{}{
-		"ips":    strings.Join(ips, ","),
-		"params": strings.Join(params, ","),
-		"lang":   strings.ToUpper(langValue),
-	}
-
 	//? Validate the input IPs
 	if ips == nil {
 		return nil, errors.New("you must provide the `ips` parameter")
@@ -262,15 +239,14 @@ func (g *Greip) BulkLookup(ips []string, params []string, lang ...string) (*map[
 		return nil, err
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("ips", strings.Join(ips, ","))
-	query.Set("params", strings.Join(params, ","))
-	query.Set("lang", strings.ToUpper(langValue))
+	queryParams := map[string]interface{}{
+		"ips":    strings.Join(ips, ","),
+		"params": strings.Join(params, ","),
+		"lang":   strings.ToUpper(langValue),
+	}
 
-	//? Make the HTTP request
 	var response map[string]ResponseLookup
-	err := g.getRequest("BulkLookup", &response, payload)
+	err := g.getRequest("geo/ip/bulk", &response, queryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -334,12 +310,6 @@ func (g *Greip) Country(countryCode string, params []string, lang ...string) (*R
 		langValue = lang[0]
 	}
 
-	payload := map[string]interface{}{
-		"CountryCode": countryCode,
-		"params":      strings.Join(params, ","),
-		"lang":        strings.ToUpper(langValue),
-	}
-
 	//? Validate the input countryCode
 	if countryCode == "" {
 		return nil, errors.New("you must provide the `countryCode` parameter")
@@ -360,15 +330,17 @@ func (g *Greip) Country(countryCode string, params []string, lang ...string) (*R
 		return nil, err
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("CountryCode", countryCode)
-	query.Set("params", strings.Join(params, ","))
-	query.Set("lang", strings.ToUpper(langValue))
+	queryParams := map[string]interface{}{
+		"params": strings.Join(params, ","),
+		"lang":   strings.ToUpper(langValue),
+	}
 
-	//? Make the HTTP request
 	var response ResponseCountry
-	err := g.getRequest("Country", &response, payload)
+	err := g.getRequest(
+		"lookup/countries/"+url.PathEscape(strings.ToUpper(countryCode)),
+		&response,
+		queryParams,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -410,22 +382,17 @@ func (g *Greip) Country(countryCode string, params []string, lang ...string) (*R
 //   - Network-related errors (e.g., timeouts, unreachable server).
 //   - API-related errors (e.g., invalid API token, empty text).
 func (g *Greip) Profanity(text string) (*ResponseProfanity, error) {
-	payload := map[string]interface{}{
-		"text": text,
-	}
-
 	//? Validate the input text
 	if text == "" {
 		return nil, errors.New("you must provide the `text` parameter")
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("text", text)
+	payload := map[string]interface{}{
+		"text": text,
+	}
 
-	//? Make the HTTP request
 	var response ResponseProfanity
-	err := g.getRequest("badWords", &response, payload)
+	err := g.postRequest("score/text", &response, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -465,22 +432,13 @@ func (g *Greip) Profanity(text string) (*ResponseProfanity, error) {
 //   - Network-related errors (e.g., timeouts, unreachable server).
 //   - API-related errors (e.g., invalid API token, empty ASN).
 func (g *Greip) AsnLookup(asn string) (*ResponseASN, error) {
-	payload := map[string]interface{}{
-		"asn": asn,
-	}
-
 	//? Validate the input ASN
 	if asn == "" {
 		return nil, errors.New("you must provide the `asn` parameter")
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("asn", asn)
-
-	//? Make the HTTP request
 	var response ResponseASN
-	err := g.getRequest("ASNLookup", &response, payload)
+	err := g.getRequest("lookup/asn/"+url.PathEscape(asn), &response, map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -520,22 +478,13 @@ func (g *Greip) AsnLookup(asn string) (*ResponseASN, error) {
 //   - Network-related errors (e.g., timeouts, unreachable server).
 //   - API-related errors (e.g., invalid API token, empty email address).
 func (g *Greip) Email(email string) (*ResponseEmail, error) {
-	payload := map[string]interface{}{
-		"email": email,
-	}
-
 	//? Validate the input email
 	if email == "" {
 		return nil, errors.New("you must provide the `email` parameter")
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("email", email)
-
-	//? Make the HTTP request
 	var response ResponseEmail
-	err := g.getRequest("validateEmail", &response, payload)
+	err := g.getRequest("score/email/"+url.PathEscape(email), &response, map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -576,11 +525,6 @@ func (g *Greip) Email(email string) (*ResponseEmail, error) {
 //   - Network-related errors (e.g., timeouts, unreachable server).
 //   - API-related errors (e.g., invalid API token, empty phone number).
 func (g *Greip) Phone(phone string, countryCode string) (*ResponsePhone, error) {
-	payload := map[string]interface{}{
-		"phone":       phone,
-		"countryCode": countryCode,
-	}
-
 	//? Validate the input phone
 	if phone == "" {
 		return nil, errors.New("you must provide the `phone` parameter")
@@ -591,14 +535,12 @@ func (g *Greip) Phone(phone string, countryCode string) (*ResponsePhone, error) 
 		return nil, errors.New("you must provide the `countryCode` parameter")
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("phone", phone)
-	query.Set("countryCode", countryCode)
+	queryParams := map[string]interface{}{
+		"country_code": strings.ToUpper(countryCode),
+	}
 
-	//? Make the HTTP request
 	var response ResponsePhone
-	err := g.getRequest("validatePhone", &response, payload)
+	err := g.getRequest("score/phone/"+url.PathEscape(phone), &response, queryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -638,22 +580,13 @@ func (g *Greip) Phone(phone string, countryCode string) (*ResponsePhone, error) 
 //   - Network-related errors (e.g., timeouts, unreachable server).
 //   - API-related errors (e.g., invalid API token, empty IBAN).
 func (g *Greip) IBAN(iban string) (*ResponseIBAN, error) {
-	payload := map[string]interface{}{
-		"iban": iban,
-	}
-
 	//? Validate the input iban
 	if iban == "" {
 		return nil, errors.New("you must provide the `iban` parameter")
 	}
 
-	//? Construct the query parameters
-	query := url.Values{}
-	query.Set("iban", iban)
-
-	//? Make the HTTP request
 	var response ResponseIBAN
-	err := g.getRequest("validateIBAN", &response, payload)
+	err := g.getRequest("lookup/iban/"+url.PathEscape(iban), &response, map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -714,7 +647,7 @@ func (g *Greip) Payment(data map[string]interface{}) (*ResponsePayment, error) {
 
 	//? Make the HTTP request
 	var response ResponsePayment
-	err := g.postRequest("paymentFraud", &response, payload)
+	err := g.postRequest("score/payments", &response, payload)
 	if err != nil {
 		return nil, err
 	}

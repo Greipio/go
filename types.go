@@ -7,8 +7,35 @@ type Greip struct {
 	test    bool
 }
 
+type LookupIP struct {
+	Address string `json:"address"`
+	Version int    `json:"version"`
+	Numeric int    `json:"numeric"`
+	Bogon   bool   `json:"bogon"`
+}
+
+type LookupGeo struct {
+	Continent          string  `json:"continent"`
+	ContinentCode      string  `json:"continent_code"`
+	ContinentGeoNameID int     `json:"continent_geo_name_id"`
+	Country            string  `json:"country"`
+	CountryCode        string  `json:"country_code"`
+	CountryGeoNameID   int     `json:"country_geo_name_id"`
+	Region             string  `json:"region"`
+	City               string  `json:"city"`
+	Postal             string  `json:"postal"`
+	Latitude           float64 `json:"latitude"`
+	Longitude          float64 `json:"longitude"`
+	Capital            string  `json:"capital"`
+	Population         int     `json:"population"`
+	Phone              string  `json:"phone"`
+	IsEU               bool    `json:"is_eu"`
+	Neighbours         string  `json:"neighbours"`
+	TLD                string  `json:"tld"`
+}
+
 type LookupASN struct {
-	Number       string `json:"asn"`
+	Number       string `json:"number"`
 	Name         string `json:"name"`
 	Organization string `json:"org"`
 	Phone        string `json:"phone"`
@@ -105,25 +132,13 @@ type LookupBrowser struct {
 }
 
 type ResponseLookup struct {
-	IP                 string         `json:"ip"`
-	IPType             string         `json:"ipType"`
-	IPNumber           int            `json:"IPNumber"`
-	ContinentName      string         `json:"continentName"`
-	ContinentCode      string         `json:"continentCode"`
-	ContinentGeoNameID int            `json:"continentGeoNameID"`
-	CountryName        string         `json:"countryName"`
-	CountryCode        string         `json:"countryCode"`
-	CountryGeoNameID   int            `json:"countryGeoNameID"`
-	Region             string         `json:"regionName"`
-	City               string         `json:"cityName"`
-	ZipCode            string         `json:"zipCode"`
-	Latitude           string         `json:"latitude"`
-	Longitude          string         `json:"longitude"`
-	Location           LookupLocation `json:"location"`
-	ASN                LookupASN      `json:"asn"`
-	Timezone           LookupTimezone `json:"timezone"`
-	Security           LookupSecurity `json:"security"`
-	Device             LookupDevice   `json:"device"`
+	IP       LookupIP       `json:"ip"`
+	Geo      LookupGeo      `json:"geo"`
+	Location LookupLocation `json:"location"`
+	ASN      LookupASN      `json:"asn"`
+	Timezone LookupTimezone `json:"timezone"`
+	Security LookupSecurity `json:"security"`
+	Device   LookupDevice   `json:"device"`
 }
 
 type Threats struct {
@@ -135,9 +150,22 @@ type Threats struct {
 	IsHosting bool   `json:"isHosting"`
 }
 
+type ThreatsSecurity struct {
+	VpnOrProxy     bool   `json:"vpn_or_proxy"`
+	VpnOrProxyType string `json:"vpn_or_proxy_type"`
+	Tor            bool   `json:"tor"`
+	Bot            bool   `json:"bot"`
+	Relay          bool   `json:"relay"`
+	Hosting        bool   `json:"hosting"`
+	IsBlacklisted  bool   `json:"is_blacklisted"`
+}
+
 type ResponseThreats struct {
-	IP      string  `json:"ip"`
-	Threats Threats `json:"threats"`
+	IP             LookupIP        `json:"ip"`
+	Score          int             `json:"score"`
+	RiskLevel      string          `json:"risk_level"`
+	Recommendation string          `json:"recommendation"`
+	Security       ThreatsSecurity `json:"security"`
 }
 
 type CountryCurrency struct {
@@ -147,29 +175,19 @@ type CountryCurrency struct {
 }
 
 type ResponseCountry struct {
-	CountryName        string          `json:"countryName"`
-	CountryCode        string          `json:"countryCode"`
-	CountryGeoNameID   int             `json:"countryGeoNameID"`
-	Capital            string          `json:"capital"`
-	Population         int             `json:"population"`
-	Language           LookupLanguage  `json:"language"`
-	Flag               LookupFlag      `json:"flag"`
-	PhoneCode          string          `json:"phoneCode"`
-	Currency           CountryCurrency `json:"currency"`
-	CountryIsEU        bool            `json:"countryIsEU"`
-	CountryNeighbours  string          `json:"countryNeighbours"`
-	TLD                string          `json:"tld"`
-	Timezone           LookupTimezone  `json:"timezone"`
-	ContinentName      string          `json:"continentName"`
-	ContinentCode      string          `json:"continentCode"`
-	ContinentGeoNameID int             `json:"continentGeoNameID"`
+	Geo      LookupGeo       `json:"geo"`
+	Language LookupLanguage  `json:"language"`
+	Flag     LookupFlag      `json:"flag"`
+	Currency CountryCurrency `json:"currency"`
+	Timezone LookupTimezone  `json:"timezone"`
 }
 
 type ResponseProfanity struct {
 	Text              string `json:"text"`
-	TotalProfaneWords int    `json:"totalBadWords"`
-	RiskScore         int    `json:"riskScore"`
-	IsSafe            bool   `json:"isSafe"`
+	TotalProfaneWords int    `json:"total_bad_words"`
+	RiskScore         int    `json:"risk_score"`
+	RiskLevel         string `json:"risk_level"`
+	Recommendation    string `json:"recommendation"`
 }
 
 type ASNIPv4 struct {
@@ -181,6 +199,7 @@ type ASNIPv6 struct {
 }
 
 type ResponseASN struct {
+	Number       string  `json:"number"`
 	ASN          string  `json:"asn"`
 	Name         string  `json:"name"`
 	Organization string  `json:"org"`
@@ -198,16 +217,16 @@ type ResponseASN struct {
 type ResponseEmail struct {
 	Score   int    `json:"score"`
 	Reason  string `json:"reason"`
-	IsValid bool   `json:"isValid"`
+	IsValid bool   `json:"is_valid"`
 	Email   string `json:"email"`
 }
 
 type ResponsePhone struct {
 	Carrier     string `json:"carrier"`
 	Reason      string `json:"reason"`
-	IsValid     bool   `json:"isValid"`
+	IsValid     bool   `json:"is_valid"`
 	Phone       string `json:"phone"`
-	CountryCode string `json:"countryCode"`
+	CountryCode string `json:"country_code"`
 }
 
 type IBANFormats struct {
@@ -244,7 +263,7 @@ type IBANBank struct {
 }
 
 type ResponseIBAN struct {
-	IsValid bool        `json:"isValid"`
+	IsValid bool        `json:"is_valid"`
 	IBAN    string      `json:"iban"`
 	Formats IBANFormats `json:"formats"`
 	Country IBANCountry `json:"country"`
@@ -257,7 +276,7 @@ type PaymentRule struct {
 }
 
 type ResponsePayment struct {
-	Score              int           `json:"score"`
+	Score              float64       `json:"score"`
 	Rules              []PaymentRule `json:"rules"`
 	TotalRulesChecked  int           `json:"rulesChecked"`
 	TotalRulesDetected int           `json:"rulesDetected"`
