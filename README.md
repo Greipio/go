@@ -2,6 +2,9 @@
 
 The Greip Go library allows you to easily interact with the Greip API to access a variety of services, including IP geolocation, threat intelligence, email validation, and more.
 
+> **Greip API v2 (current):** use module **`github.com/greipio/go/v2`** — docs on [pkg.go.dev/github.com/greipio/go/v2](https://pkg.go.dev/github.com/greipio/go/v2).  
+> The path **`github.com/greipio/go`** (without `/v2`) is the legacy **v1** module; its latest tag is **v1.0.0** and targets the old API. Go requires a new major module path for v2+.
+
 [Report Issue](https://github.com/Greipio/go/issues/new) ·
 [Request Feature](https://github.com/Greipio/go/discussions/new?category=ideas)
 · [Greip Website](https://greip.io/) · [Documentation](https://docs.greip.io/)
@@ -31,7 +34,7 @@ require (
 Then, download the Greip library by running:
 
 ```bash
-go mod download github.com/greipio/go/v2
+go get github.com/greipio/go/v2@v2.0.0
 ```
 
 ## Usage
@@ -56,7 +59,7 @@ func main() {
         fmt.Println("Error:", err)
         return
     }
-    fmt.Println(response.IP, response.ContinentName, response.City)
+    fmt.Println(response.IP.Address, response.Geo.Country, response.Geo.City)
 }
 ```
 
@@ -69,7 +72,7 @@ The Greip library provides various methods to interact with the API:
 - **BulkLookup(ips []string, params []string, lang ...string)**: Get geolocation information for multiple IP addresses.
 - **Country(countryCode string, params []string, lang ...string)**: Get information about a country by its code.
 - **Profanity(text string)**: Check if a given text contains profanity.
-- **ASN(asn string)**: Get information about an ASN (Autonomous System Number).
+- **AsnLookup(asn string)**: Get information about an ASN (Autonomous System Number).
 - **Email(email string)**: Validate an email address.
 - Phone(phone string, countryCode string): Validate or lookup a phone number.
 - **IBAN(iban string)**: Validate or lookup an IBAN number.
@@ -84,7 +87,7 @@ if err != nil {
     fmt.Println("Error:", err)
     return
 }
-fmt.Println(countryInfo.CountryName, countryInfo.Population)
+fmt.Println(countryInfo.Geo.CountryCode, countryInfo.Geo.Population)
 ```
 
 ## Development Mode
